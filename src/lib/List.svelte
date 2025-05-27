@@ -27,44 +27,14 @@
         const handleResize = () => {
             if (containerEl) {
                 isResizing = true;
-                const scrollStateBeforeResize = {
-                    scrollTop: lastScrollTop,
-                    scrollHeight: lastScrollHeight,
-                    clientHeight: containerEl.clientHeight
-                };
-
-                requestAnimationFrame(() => {
-                    if (containerEl) {
-                        const newScrollHeight = containerEl.scrollHeight;
-                        const newClientHeight = containerEl.clientHeight;
-                        let newTargetScrollTop;
-
-                        if (growDirection === 'downwards') {
-                            if (scrollStateBeforeResize.scrollHeight > 0 && scrollStateBeforeResize.clientHeight > 0) {
-                                const bottomOfViewport = scrollStateBeforeResize.scrollTop + scrollStateBeforeResize.clientHeight;
-                                const bottomViewPercentage = Math.min(1, bottomOfViewport / scrollStateBeforeResize.scrollHeight);
-                                newTargetScrollTop = (bottomViewPercentage * newScrollHeight) - newClientHeight;
-                            } else {
-                                newTargetScrollTop = newScrollHeight - newClientHeight;
-                            }
-                        } else {
-                            if (scrollStateBeforeResize.scrollHeight > 0) {
-                                const topViewPercentage = scrollStateBeforeResize.scrollTop / scrollStateBeforeResize.scrollHeight;
-                                newTargetScrollTop = topViewPercentage * newScrollHeight;
-                            } else {
-                                newTargetScrollTop = 0;
-                            }
-                        }
-
-                        newTargetScrollTop = Math.max(0, Math.min(newTargetScrollTop, newScrollHeight - newClientHeight));
-                        containerEl.scrollTop = newTargetScrollTop;
-
-                        lastScrollTop = containerEl.scrollTop;
-                        lastScrollHeight = newScrollHeight;
-                        isResizing = false;
+                const fromBottom = containerEl.scrollHeight - containerEl.scrollTop - containerEl.clientHeight;
+                tick().then(() => {
+                    if (growDirection === 'downwards') {
+                        containerEl.scrollTop = Math.max(0, containerEl.scrollHeight - containerEl.clientHeight - fromBottom);
                     } else {
-                        isResizing = false;
+                        containerEl.scrollTop = 0;
                     }
+                    isResizing = false;
                 });
             }
         };

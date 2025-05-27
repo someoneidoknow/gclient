@@ -354,7 +354,6 @@
                 buildHTML={buildMessageHTML}
                 containerClass="messages-list-container"
                 itemClass="message-item-wrapper"
-                maxHeight="calc(100vh - 120px)"
                 growDirection="downwards"
                 title=""
             >
@@ -401,7 +400,8 @@
     background-color: #0d0d0d;
 }
 .messages-area {
-    flex-grow: 1;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
     padding: 0 0.5em;
 }
@@ -412,6 +412,11 @@
     box-shadow: none !important;
     width: 100% !important;
     max-width: none !important;
+    height: 100% !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 :global(.message-item-wrapper) {
     background-color: transparent !important;

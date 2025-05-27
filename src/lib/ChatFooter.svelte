@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
 
     export let currentMessage = "";
     export let showSuggestions = false;
@@ -7,12 +7,18 @@
     export let selectedSuggestionIndex = 0;
 
     const dispatch = createEventDispatcher();
+    let textareaEl: HTMLTextAreaElement | null = null;
 
     function sendMessage() {
         dispatch('sendMessage');
     }
 
     function handleKeydown(event: KeyboardEvent) {
+        if (event.key === 'Enter' && !event.shiftKey && !showSuggestions) {
+            event.preventDefault();
+            sendMessage();
+            return;
+        }
         dispatch('keydown', event);
     }
 
@@ -21,12 +27,29 @@
     }
 
     function handleInput(event: Event) {
-        const target = event.target as HTMLInputElement;
+        const target = event.target as HTMLTextAreaElement;
+        autoResize(target);
         dispatch('input', { value: target.value, selectionStart: target.selectionStart });
     }
 
     function selectSuggestion(index: number) {
         dispatch('selectSuggestion', index);
+    }
+
+    function autoResize(el: HTMLTextAreaElement) {
+        el.style.height = "auto";
+        const maxHeight = Math.round(window.innerHeight * 0.3);
+        el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+    }
+
+    onMount(() => {
+        if (textareaEl) {
+            autoResize(textareaEl);
+        }
+    });
+
+    $: if (textareaEl) {
+        autoResize(textareaEl);
     }
 </script>
 
@@ -46,14 +69,16 @@
             {/each}
         </div>
     {/if}
-    <input
-        type="text"
+    <textarea
+        bind:this={textareaEl}
         bind:value={currentMessage}
         placeholder="Write a message..."
+        rows="1"
         on:keydown={handleKeydown}
         on:keyup={handleKeyup}
         on:input={handleInput}
-        on:keypress={(e) => e.key === 'Enter' && !showSuggestions && sendMessage()}
+        class="chat-input"
+        style="resize: none"
     />
     <button on:click={sendMessage}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
@@ -65,10 +90,12 @@
 <style>
     .chat-footer {
         display: flex;
-        padding: 0.75em 1em;
+        padding: 0.4em 0.7em;
         background-color: #1f1f1f;
         border-top: 1px solid #2a2a2a;
         position: relative;
+        box-sizing: border-box;
+        align-items: flex-end;
     }
     .suggestions-container {
         position: absolute;
@@ -101,18 +128,27 @@
         color: white;
     }
 
-    .chat-footer input {
+    .chat-footer textarea.chat-input {
         flex-grow: 1;
-        padding: 0.75em 1em;
+        padding: 0.4em 0.8em;
         border: 1px solid #333;
-        border-radius: 20px;
+        border-radius: 18px;
         background-color: #2c2c2c;
         color: #e0e0e0;
-        margin-right: 0.75em;
+        margin-right: 0.5em;
         outline: none;
+        font-family: inherit;
+        font-size: 1em;
+        min-height: 28px;
+        max-height: 30vh;
+        line-height: 1.3;
+        overflow-y: hidden;
+        box-sizing: border-box;
+        resize: none;
+        transition: max-height 0.15s;
     }
 
-    .chat-footer input::placeholder {
+    .chat-footer textarea.chat-input::placeholder {
         color: #777;
     }
 
@@ -121,13 +157,14 @@
         color: white;
         border: none;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         padding: 0;
+        box-sizing: border-box;
     }
 
     .chat-footer button:hover {
