@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "bclient",
+      "name": "gclient",
       "dependencies": {
         "@tauri-apps/api": "^2.5.0",
         "@tauri-apps/plugin-opener": "^2",

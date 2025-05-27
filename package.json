@@ -1,6 +1,6 @@
 {
-  "name": "bclient",
-  "version": "0.1.0",
+  "name": "gclient",
+  "version": "1.0.0",
   "description": "",
   "type": "module",
   "scripts": {
