@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher, onMount } from 'svelte';
+    import { tick } from 'svelte';
 
     export let currentMessage = "";
     export let showSuggestions = false;
@@ -9,11 +10,72 @@
     const dispatch = createEventDispatcher();
     let textareaEl: HTMLTextAreaElement | null = null;
 
+    let sentMessages: string[] = [];
+    let sentIndex: number | null = null;
+    const SENT_LIMIT = 20;
+
     function sendMessage() {
+        if (currentMessage.trim() !== "") {
+            sentMessages.unshift(currentMessage);
+            if (sentMessages.length > SENT_LIMIT) {
+                sentMessages.length = SENT_LIMIT;
+            }
+        }
+        sentIndex = null;
         dispatch('sendMessage');
     }
 
     function handleKeydown(event: KeyboardEvent) {
+        if (event.key === 'ArrowUp' && !showSuggestions) {
+            if (sentMessages.length > 0) {
+                if (sentIndex === null) {
+                    sentIndex = 0;
+                } else if (sentIndex < SENT_LIMIT - 1 && sentIndex < sentMessages.length - 1) {
+                    sentIndex++;
+                } else if (sentIndex === sentMessages.length - 1) {
+                    sentIndex = null;
+                    currentMessage = "";
+                    tick().then(() => {
+                        if (textareaEl) {
+                            textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
+                        }
+                    });
+                    event.preventDefault();
+                    return;
+                }
+                currentMessage = sentMessages[sentIndex] ?? "";
+                tick().then(() => {
+                    if (textareaEl) {
+                        textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
+                    }
+                });
+            }
+            event.preventDefault();
+            return;
+        }
+        if (event.key === 'ArrowDown' && !showSuggestions) {
+            if (sentMessages.length > 0) {
+                if (sentIndex === null && currentMessage === "") {
+                    sentIndex = sentMessages.length - 1;
+                    currentMessage = sentMessages[sentIndex] ?? "";
+                } else if (sentIndex !== null) {
+                    if (sentIndex > 0) {
+                        sentIndex--;
+                        currentMessage = sentMessages[sentIndex] ?? "";
+                    } else {
+                        sentIndex = null;
+                        currentMessage = "";
+                    }
+                }
+                tick().then(() => {
+                    if (textareaEl) {
+                        textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
+                    }
+                });
+            }
+            event.preventDefault();
+            return;
+        }
         if (event.key === 'Enter' && !event.shiftKey && !showSuggestions) {
             event.preventDefault();
             sendMessage();
@@ -29,6 +91,9 @@
     function handleInput(event: Event) {
         const target = event.target as HTMLTextAreaElement;
         autoResize(target);
+        if (sentIndex !== null) {
+            sentIndex = null;
+        }
         dispatch('input', { value: target.value, selectionStart: target.selectionStart });
     }
 
