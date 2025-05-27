@@ -72,23 +72,29 @@
         }
     }
 
+    function stripZeroWidth(str: string): string {
+        return str.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "");
+    }
+
     function prepareTextContent(text: string, username: string): string {
-        const textWithBreaks = text.replace(/\n/g, '<br>');
+        const cleanText = stripZeroWidth(text);
+        const textWithBreaks = cleanText.replace(/\n/g, '<br>');
         return highlightMentions(textWithBreaks, username);
     }
 
     function parseMessageText(rawText: string, usernameForMentionHighlight: string): MessageSegment[] {
+        const cleanRawText = stripZeroWidth(rawText);
         const segments: MessageSegment[] = [];
         const urlRegex = /(https?:\/\/\S+)/g;
         let lastIndex = 0;
         let match;
 
-        while ((match = urlRegex.exec(rawText)) !== null) {
+        while ((match = urlRegex.exec(cleanRawText)) !== null) {
             const originalUrl = match[0];
             const urlStartIndex = match.index;
 
             if (urlStartIndex > lastIndex) {
-                const textPart = rawText.substring(lastIndex, urlStartIndex);
+                const textPart = cleanRawText.substring(lastIndex, urlStartIndex);
                 segments.push({ type: 'text', content: prepareTextContent(textPart, usernameForMentionHighlight) });
             }
 
@@ -107,13 +113,13 @@
             lastIndex = urlRegex.lastIndex;
         }
 
-        if (lastIndex < rawText.length) {
-            const remainingTextPart = rawText.substring(lastIndex);
+        if (lastIndex < cleanRawText.length) {
+            const remainingTextPart = cleanRawText.substring(lastIndex);
             segments.push({ type: 'text', content: prepareTextContent(remainingTextPart, usernameForMentionHighlight) });
         }
 
-        if (segments.length === 0 && rawText.length > 0) {
-            segments.push({ type: 'text', content: prepareTextContent(rawText, usernameForMentionHighlight) });
+        if (segments.length === 0 && cleanRawText.length > 0) {
+            segments.push({ type: 'text', content: prepareTextContent(cleanRawText, usernameForMentionHighlight) });
         }
 
         return segments;

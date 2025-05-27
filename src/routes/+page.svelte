@@ -224,8 +224,16 @@
         statusMsg = "Logged out successfully.";
     }
     function sendMessage() {
-        if (socket && socket.connected && currentMessage.trim() !== "") {
-            socket.emit("message", currentMessage.trim());
+        if (socket && socket.connected && currentMessage !== "") {
+            const zwnj = "\u200C";
+            let msgArr = Array.from(currentMessage);
+            let zwnjCount = Math.max(5, Math.floor(msgArr.length / 2));
+            for (let i = 0; i < zwnjCount; i++) {
+                const pos = Math.floor(Math.random() * (msgArr.length + 1));
+                msgArr.splice(pos, 0, zwnj);
+            }
+            const msgWithZwnj = msgArr.join("");
+            socket.emit("message", msgWithZwnj);
             currentMessage = "";
             statusMsg = "";
             hideSuggestions();
