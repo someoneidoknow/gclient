@@ -31,5 +31,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "tauri": {
+    "allowlist": {
+      "notification": {
+        "all": true
+      }
+    }
   }
 }
