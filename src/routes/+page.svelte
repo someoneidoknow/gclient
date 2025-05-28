@@ -225,15 +225,15 @@
     }
     function sendMessage() {
         if (socket && socket.connected && currentMessage !== "") {
-            const zwnj = "\u200C";
+            const ZWNJ = "\u200C";
             let msgArr = Array.from(currentMessage);
-            let zwnjCount = Math.max(5, Math.floor(msgArr.length / 2));
-            for (let i = 0; i < zwnjCount; i++) {
+            let ZWNJCount = Math.max(5, Math.floor(msgArr.length / 2));
+            for (let i = 0; i < ZWNJCount; i++) {
                 const pos = Math.floor(Math.random() * (msgArr.length + 1));
-                msgArr.splice(pos, 0, zwnj);
+                msgArr.splice(pos, 0, ZWNJ);
             }
-            const msgWithZwnj = msgArr.join("");
-            socket.emit("message", msgWithZwnj);
+            const msgWithZWNJ = msgArr.join("");
+            socket.emit("message", msgWithZWNJ);
             currentMessage = "";
             statusMsg = "";
             hideSuggestions();
