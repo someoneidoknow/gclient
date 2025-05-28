@@ -25,15 +25,17 @@
 
     function containsMention(messageText: string, username: string): boolean {
         if (!username.trim()) return false;
-        const usernamePattern = new RegExp(`@${username.replace(/[.*+?^${}()|[\]\\\\]/g, '\\\\$&')}(?:#twoblade\\.com)?\\b`, 'i');
-        return usernamePattern.test(messageText);
+        const cleanText = stripZeroWidth(messageText);
+        const usernamePattern = new RegExp(`@${username.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}(?:#twoblade\\.com)?\\b`, 'i');
+        return usernamePattern.test(cleanText);
     }
 
     function highlightMentions(messageText: string, username: string): string {
-      if (!username.trim()) return messageText;
-      const escapedUsername = username.replace(/[.*+?^${}()|[\]\\\\]/g, '\\\\$&');
-      const mentionPattern = new RegExp(`(@${escapedUsername}(?:#twoblade\\.com)?)\\b`, 'gi');
-      return messageText.replace(mentionPattern, '<span class="mention">$1</span>');
+        if (!username.trim()) return messageText;
+        const cleanText = stripZeroWidth(messageText);
+        const escapedUsername = username.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
+        const mentionPattern = new RegExp(`(@${escapedUsername}(?:#twoblade\\.com)?)\\b`, 'gi');
+        return cleanText.replace(mentionPattern, '<span class="mention">$1</span>');
     }
 
     $: isMentioned = containsMention(text, currentUsername);
