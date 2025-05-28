@@ -12,6 +12,7 @@
       requestPermission,
       sendNotification,
     } from '@tauri-apps/plugin-notification';
+    import { initializeUsernameFilters, testUsername } from "./username-blocker.js";
 
     let username = "";
     let password = "";
@@ -96,6 +97,7 @@
 
     onMount(async () => {
         messages = [];
+        initializeUsernameFilters();
         try {
             const savedCreds =
                 await invoke<Record<string, string>>("load_credentials");
@@ -222,6 +224,7 @@
             });
             socket.on("message", async (msg) => {
                 const { id, text, fromUser, fromIQ, timestamp } = msg;
+                if (testUsername(fromUser)){return;}
                 const newMessage = {
                     id: id || Date.now().toString(),
                     text,
