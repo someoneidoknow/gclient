@@ -1,6 +1,6 @@
 [package]
 name = "gclient"
-version = "1.2.1"
+version = "1.2.2"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -27,3 +27,5 @@ reqwest = { version = "0.12.15", features = ["cookies", "default-tls", "json"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 notify-rust = "4.11.7"
 dirs = "6.0.0"
+winrt-notification = "0.5.1"
+tauri-plugin-notification = "2"

@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use tauri::Manager;
-use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -163,16 +161,6 @@ async fn login_twoblade(
     Ok(out)
 }
 
-#[tauri::command]
-async fn send_desktop_notification(app_handle: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
-    Notification::new()
-        .summary(&title)
-        .body(&body)
-        .show()
-        .map_err(|e| format!("Failed to send notification: {}", e))?;
-    Ok(())
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct AppSettings {
     pub anti_spam_mode: String,
@@ -219,6 +207,7 @@ async fn load_settings() -> Result<AppSettings, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             greet, 
             login_twoblade, 
@@ -226,7 +215,6 @@ pub fn run() {
             save_credentials, 
             load_credentials, 
             delete_credentials,
-            send_desktop_notification,
             save_settings,
             load_settings
         ])

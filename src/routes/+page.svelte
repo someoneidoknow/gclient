@@ -7,6 +7,11 @@
     import LoginForm from "../lib/LoginForm.svelte";
     import ChatHeader from "../lib/ChatHeader.svelte";
     import ChatFooter from "../lib/ChatFooter.svelte";
+    import {
+      isPermissionGranted,
+      requestPermission,
+      sendNotification,
+    } from '@tauri-apps/plugin-notification';
 
     let username = "";
     let password = "";
@@ -51,7 +56,11 @@
         currentUser: string,
     ): boolean {
         if (!currentUser.trim()) return false;
-        const escapedUsername = currentUser.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        messageText = messageText.replace(/\u200C/g, "");
+        function escapeRegExp(str: string) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        }
+        const escapedUsername = escapeRegExp(currentUser.replace(/#twoblade\.com$/, ""));
         const mentionPattern = new RegExp(
             `@${escapedUsername}(?:#twoblade\\.com)?\\b`,
             "i",
@@ -229,10 +238,17 @@
                 try {
                     const isFocused = document.hasFocus();
                     if (!isFocused && messageContainsMention(text, username)) {
-                        await invoke("send_desktop_notification", {
+                        let permissionGranted = await isPermissionGranted();
+                        if (!permissionGranted) {
+                          const permission = await requestPermission();
+                          permissionGranted = permission === 'granted';
+                        }
+                        if (permissionGranted) {
+                          sendNotification({
                             title: `Mentioned by ${fromUser}`,
                             body: text,
-                        });
+                          });
+                        }
                     }
                 } catch (error) {
                     console.error(
