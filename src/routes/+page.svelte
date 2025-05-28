@@ -94,7 +94,7 @@
                 username = savedCreds.username;
                 password = savedCreds.password;
                 cfClearance = savedCreds.cf_clearance || "";
-                statusMsg = "Auto-logging in with saved credentials...";
+                statusMsg = "Using saved credentials...";
                 await loginAndConnect();
             }
         } catch (err) {
@@ -103,11 +103,11 @@
     });
     async function loginAndConnect() {
         if (!username.trim() || !password.trim()) {
-            statusMsg = "Please enter username and password.";
+            statusMsg = "Please enter your username and password.";
             return;
         }
         isLoggingIn = true;
-        statusMsg = "Authenticating via Rust backend…";
+        statusMsg = "Authenticating…";
         try {
             const result = await invoke<Record<string, string>>(
                 "login_twoblade_and_save",
@@ -123,7 +123,7 @@
             if (!authToken) {
                 throw new Error("No auth_token returned");
             }
-            statusMsg = "Connecting to socket…";
+            statusMsg = "Connecting…";
             const socketCookie =
                 `${finalCfClearance ? `cf_clearance=${finalCfClearance}; ` : ""}` +
                 `auth_token=${authToken}`;
@@ -289,7 +289,7 @@
         username = "";
         password = "";
         cfClearance = "";
-        statusMsg = "Logged out successfully.";
+        statusMsg = "Logged out!";
     }
     function sendMessage() {
         if (socket && socket.connected && currentMessage !== "") {
@@ -310,7 +310,6 @@
             } else { 
                 socket.emit("message", messageToSend);
             }
-
             currentMessage = "";
             statusMsg = "";
             hideSuggestions();

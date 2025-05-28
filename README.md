@@ -1,7 +1,29 @@
-# gclient
+# gClient
 
-a client for twoblade, made by me because the web one sucks
+gClient is a 3rd party, feature rich standalone client for [Twoblade](https://twoblade.com)'s [live chat](https://twoblade.com/chat).
+gClient 
 
-this consumes like 120MiB ram on windows
+> [!CAUTION]
+> gClient is not complete, there could be bugs!
 
-why did i do this? i was bored
+## Features
+- [x] Ping notifications.
+- [x] Similar message filter circumventions.
+- [x] Multi-line message support.
+- [x] Image embeds.
+- [x] Ping autocomplete.
+- [ ] Settings.
+- [ ] Themes.
+- [ ] Multiple domain support.
+
+And more!
+
+## FAQ
+<details>
+  <summary><b>Question:</b> "Why should I use gClient and not another client?"</summary>
+  <b>Answer:</b> Because gClient has support for multiline messages, image embeds, and has exclusive similar message filter bypasses!
+</details>
+<details>
+  <summary><b>Question:</b> "How does gClient work?"</summary>
+  <b>Answer:</b> gClient works by communicating with Twoblade's chat server over a secure WebSocket connection.
+</details>
