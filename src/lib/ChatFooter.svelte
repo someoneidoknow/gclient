@@ -27,55 +27,54 @@
 
     function handleKeydown(event: KeyboardEvent) {
         if (event.key === 'ArrowUp' && !showSuggestions) {
-            if (sentMessages.length > 0) {
-                if (sentIndex === null) {
-                    sentIndex = 0;
-                } else if (sentIndex < SENT_LIMIT - 1 && sentIndex < sentMessages.length - 1) {
-                    sentIndex++;
-                } else if (sentIndex === sentMessages.length - 1) {
-                    sentIndex = null;
-                    currentMessage = "";
+            if (textareaEl && textareaEl.selectionStart === 0 && textareaEl.selectionEnd === 0) {
+                if (sentMessages.length > 0) {
+                    if (sentIndex === null) {
+                        sentIndex = 0;
+                    } else if (sentIndex < SENT_LIMIT - 1 && sentIndex < sentMessages.length - 1) {
+                        sentIndex++;
+                    } else if (sentIndex === sentMessages.length - 1) {
+                        event.preventDefault();
+                        return;
+                    }
+                    currentMessage = sentMessages[sentIndex] ?? "";
                     tick().then(() => {
                         if (textareaEl) {
-                            textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
+                            textareaEl.selectionStart = textareaEl.selectionEnd = 0;
                         }
                     });
                     event.preventDefault();
-                    return;
                 }
-                currentMessage = sentMessages[sentIndex] ?? "";
-                tick().then(() => {
-                    if (textareaEl) {
-                        textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
-                    }
-                });
             }
-            event.preventDefault();
             return;
         }
+
         if (event.key === 'ArrowDown' && !showSuggestions) {
-            if (sentMessages.length > 0) {
-                if (sentIndex === null && currentMessage === "") {
-                    sentIndex = sentMessages.length - 1;
-                    currentMessage = sentMessages[sentIndex] ?? "";
-                } else if (sentIndex !== null) {
-                    if (sentIndex > 0) {
-                        sentIndex--;
-                        currentMessage = sentMessages[sentIndex] ?? "";
-                    } else {
-                        sentIndex = null;
-                        currentMessage = "";
+            if (textareaEl && textareaEl.selectionStart === textareaEl.value.length && textareaEl.selectionEnd === textareaEl.value.length) {
+                if (sentMessages.length > 0) {
+                    if (sentIndex === null && currentMessage === "") {
+                        return;
+                    } 
+                    if (sentIndex !== null) {
+                        if (sentIndex > 0) {
+                            sentIndex--;
+                            currentMessage = sentMessages[sentIndex] ?? "";
+                        } else {
+                            sentIndex = null;
+                            currentMessage = "";
+                        }
+                        tick().then(() => {
+                            if (textareaEl) {
+                                textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
+                            }
+                        });
+                        event.preventDefault();
                     }
                 }
-                tick().then(() => {
-                    if (textareaEl) {
-                        textareaEl.selectionStart = textareaEl.selectionEnd = textareaEl.value.length;
-                    }
-                });
             }
-            event.preventDefault();
             return;
         }
+
         if (event.key === 'Enter' && !event.shiftKey && !showSuggestions) {
             event.preventDefault();
             sendMessage();

@@ -12,7 +12,7 @@ gClient
 - [x] Multi-line message support.
 - [x] Image embeds.
 - [x] Ping autocomplete.
-- [ ] Settings.
+- [x] Settings.
 - [ ] Themes.
 - [ ] Multiple domain support.
 
