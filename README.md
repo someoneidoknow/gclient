@@ -7,7 +7,7 @@ gClient
 > gClient is not complete, there could be bugs!
 
 ## Features
-- [x] Ping notifications.
+- [x] Ping notifications. ([Note](https://github.com/someoneidoknow/gclient/issues/2#issuecomment-2917559498))
 - [x] Similar message filter circumventions.
 - [x] Multi-line message support.
 - [x] Image embeds.
