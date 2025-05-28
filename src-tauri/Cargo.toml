@@ -1,6 +1,6 @@
 [package]
 name = "gclient"
-version = "1.1.1"
+version = "1.2.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["config-json5", "config-toml"] }
 tauri-plugin-opener = "2"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 serde = { version = "1", features = ["derive"] }
@@ -26,3 +26,4 @@ serde_json = "1"
 reqwest = { version = "0.12.15", features = ["cookies", "default-tls", "json"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 notify-rust = "4.11.7"
+dirs = "6.0.0"

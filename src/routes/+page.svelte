@@ -26,6 +26,25 @@
     let selectedSuggestionIndex = 0;
     let mentionStart = -1;
     let mentionQuery = "";
+    type AntiSpamMode = "none" | "smart" | "always";
+    interface AppSettings {
+        anti_spam_mode: AntiSpamMode;
+    }
+    let antiSpamMode: AntiSpamMode = "always";
+
+    let lastMessageSentSmartly: string | null = null;
+    let isAwaitingSmartModeError = false;
+
+    function addZWNJ(text: string): string {
+        const zwnj = "\u200C";
+        let msgArr = Array.from(text);
+        let zwnjCount = Math.max(5, Math.floor(msgArr.length / 2));
+        for (let i = 0; i < zwnjCount; i++) {
+            const pos = Math.floor(Math.random() * (msgArr.length + 1));
+            msgArr.splice(pos, 0, zwnj);
+        }
+        return msgArr.join("");
+    }
 
     function messageContainsMention(
         messageText: string,
@@ -48,6 +67,24 @@
         timestamp: string;
     }[] = [];
 
+    async function loadAntiSpamSetting() {
+        try {
+            const settings = await invoke<AppSettings>('load_settings');
+            antiSpamMode = settings.anti_spam_mode || "smart"; 
+            console.log("Anti-spam mode loaded:", antiSpamMode);
+        } catch (error) {
+            console.error("Failed to load anti-spam settings:", error);
+            antiSpamMode = "smart";
+        }
+    }
+
+    const handleWindowFocus = async () => {
+        if (isLoggedIn && socket && socket.connected) {
+            console.log("Window focused, reloading anti-spam settings.");
+            await loadAntiSpamSetting();
+        }
+    };
+
     onMount(async () => {
         messages = [];
         try {
@@ -62,6 +99,7 @@
             }
         } catch (err) {
         }
+        window.addEventListener('focus', handleWindowFocus);
     });
     async function loginAndConnect() {
         if (!username.trim() || !password.trim()) {
@@ -98,12 +136,42 @@
                     Origin: "https://twoblade.com",
                 },
             });
-            socket.on("connect", () => {
+            socket.on("connect", async () => {
                 statusMsg = "";
                 isLoggedIn = true;
                 isLoggingIn = false;
                 knownUsers.add(username);
+                await loadAntiSpamSetting();
             });
+
+            socket.on("error", (errorPayload: any) => {
+                let errorMessage: string | null = null;
+                if (typeof errorPayload === 'object' && errorPayload !== null && typeof errorPayload.message === 'string') {
+                    errorMessage = errorPayload.message;
+                } else if (typeof errorPayload === 'string') {
+                    errorMessage = errorPayload;
+                }
+
+                console.log("Socket 'error' event:", errorPayload);
+
+                if (
+                    isAwaitingSmartModeError &&
+                    lastMessageSentSmartly &&
+                    errorMessage === "Your message is too similar to a recent message you sent."
+                ) {
+                    console.log("Smart mode: Detected 'too similar' error, resending with ZWNJ.");
+                    const zwnjMessage = addZWNJ(lastMessageSentSmartly);
+                    socket?.emit("message", zwnjMessage);
+                    lastMessageSentSmartly = null;
+                    isAwaitingSmartModeError = false;
+                } else if (errorMessage) {
+                    if (isAwaitingSmartModeError) {
+                        isAwaitingSmartModeError = false;
+                        lastMessageSentSmartly = null;
+                    }
+                }
+            });
+
             socket.on("authenticated", () => {
                 statusMsg = "";
             });
@@ -225,18 +293,27 @@
     }
     function sendMessage() {
         if (socket && socket.connected && currentMessage !== "") {
-            const ZWNJ = "\u200C";
-            let msgArr = Array.from(currentMessage);
-            let ZWNJCount = Math.max(5, Math.floor(msgArr.length / 2));
-            for (let i = 0; i < ZWNJCount; i++) {
-                const pos = Math.floor(Math.random() * (msgArr.length + 1));
-                msgArr.splice(pos, 0, ZWNJ);
+            if (isAwaitingSmartModeError) {
+                isAwaitingSmartModeError = false;
+                lastMessageSentSmartly = null;
             }
-            const msgWithZWNJ = msgArr.join("");
-            socket.emit("message", msgWithZWNJ);
+
+            let messageToSend = currentMessage;
+
+            if (antiSpamMode === "smart") {
+                lastMessageSentSmartly = currentMessage;
+                isAwaitingSmartModeError = true;
+                socket.emit("message", messageToSend);
+            } else if (antiSpamMode === "always") {
+                messageToSend = addZWNJ(currentMessage);
+                socket.emit("message", messageToSend);
+            } else { 
+                socket.emit("message", messageToSend);
+            }
             currentMessage = "";
             statusMsg = "";
             hideSuggestions();
+
         } else if (!socket || !socket.connected) {
             statusMsg = "Not connected to server.";
         }
@@ -337,6 +414,7 @@
     }
     onDestroy(() => {
         socket?.disconnect();
+        window.removeEventListener('focus', handleWindowFocus);
     });
     const buildMessageHTML = (item: any) => {
         return "";
