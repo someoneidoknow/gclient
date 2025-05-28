@@ -1,5 +1,13 @@
 # gClient
 
+![GitHub forks](https://img.shields.io/github/forks/someoneidoknow/gclient?style=for-the-badge)
+![GitHub Release](https://img.shields.io/github/v/release/someoneidoknow/gclient?style=for-the-badge)
+
+![GitHub top language](https://img.shields.io/github/languages/top/someoneidoknow/gclient?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/count/someoneidoknow/gclient?style=for-the-badge)
+
+
+
 gClient is a 3rd party, feature rich standalone client for [Twoblade](https://twoblade.com)'s [live chat](https://twoblade.com/chat).
 gClient 
 
