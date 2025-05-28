@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 use tauri::Manager;
 use notify_rust::Notification;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
+use dirs::config_dir;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -169,6 +173,48 @@ async fn send_desktop_notification(app_handle: tauri::AppHandle, title: String, 
     Ok(())
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct AppSettings {
+    pub anti_spam_mode: String,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        AppSettings {
+            anti_spam_mode: "smart".to_string(),
+        }
+    }
+}
+
+fn settings_path() -> Result<PathBuf, String> {
+    config_dir()
+        .ok_or_else(|| "No config dir found".to_string())
+        .map(|mut dir| {
+            dir.push("2bclient");
+            dir.push("settings.json");
+            dir
+        })
+}
+
+#[tauri::command]
+async fn save_settings(settings: AppSettings) -> Result<(), String> {
+    let path = settings_path()?;
+    let json = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
+    fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
+    fs::write(path, json).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_settings() -> Result<AppSettings, String> {
+    let path = settings_path()?;
+    if !path.exists() {
+        return Ok(AppSettings::default());
+    }
+    let data = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    serde_json::from_str(&data).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -180,7 +226,9 @@ pub fn run() {
             save_credentials, 
             load_credentials, 
             delete_credentials,
-            send_desktop_notification
+            send_desktop_notification,
+            save_settings,
+            load_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
