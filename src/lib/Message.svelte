@@ -34,7 +34,7 @@
         if (!username.trim()) return messageText;
         const cleanText = stripZeroWidth(messageText);
         const escapedUsername = username.replace(/[.*+?^${}()|[\\]\\]/g, '\$&');
-        const mentionPattern = new RegExp(`(@${escapedUsername}(?:#twoblade\.com)?)\b`, 'gi');
+        const mentionPattern = new RegExp(`(@${escapedUsername}(?:#twoblade\.com)?)\\b`, 'gi');
         return cleanText.replace(mentionPattern, '<span class="mention">$1</span>');
     }
 
