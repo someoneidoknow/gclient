@@ -41,6 +41,9 @@ streaming_example_test_video.mp4
 /examples/**/src-tauri/gen/
 /bench/**/src-tauri/gen/
 
+# generated android files
+/src-tauri/gen/
+
 # logs
 logs
 *.log
